@@ -121,7 +121,7 @@ const TimesheetForm = () => {
               max="24"
               value={timesheet.hours[day]}
               onChange={(e) => handleHourChange(day, e.target.value)}
-              required
+            
             />
           </div>
         ))}
