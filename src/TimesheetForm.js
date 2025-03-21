@@ -1,103 +1,118 @@
-// src/TimesheetForm.js
-import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import jsPDF from "jspdf";
-import "bootstrap/dist/css/bootstrap.min.css";
+import React, { useState, useRef } from 'react';
+import axios from 'axios';
 import { useReactToPrint } from 'react-to-print';
-import React, { useRef } from 'react';
 
 const TimesheetForm = () => {
-  const navigate = useNavigate();
-  const [weekStart, setWeekStart] = useState("");
+  const componentRef = useRef();
+
+  const [employeeName, setEmployeeName] = useState('');
   const [entries, setEntries] = useState([
-    { day: "Monday", job_name: "", work_class: "", hours: "" },
-    { day: "Tuesday", job_name: "", work_class: "", hours: "" },
-    { day: "Wednesday", job_name: "", work_class: "", hours: "" },
-    { day: "Thursday", job_name: "", work_class: "", hours: "" },
-    { day: "Friday", job_name: "", work_class: "", hours: "" },
+    { date: '', jobName: '', workClass: '', hours: '' }
   ]);
 
   const handleChange = (index, field, value) => {
-    const newEntries = [...entries];
-    newEntries[index][field] = value;
-    setEntries(newEntries);
+    const updated = [...entries];
+    updated[index][field] = value;
+    setEntries(updated);
   };
 
-  
-  
+  const addEntry = () => {
+    setEntries([...entries, { date: '', jobName: '', workClass: '', hours: '' }]);
+  };
 
-  const handleSubmit = async (e) => {
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+  });
+
+  const onSubmit = async (e) => {
     e.preventDefault();
+    const filteredEntries = entries.filter(entry =>
+      entry.date || entry.jobName || entry.workClass || entry.hours
+    );
+
+    if (!employeeName || filteredEntries.length === 0) {
+      alert('Please enter your name and at least one timesheet entry.');
+      return;
+    }
 
     try {
-      const token = localStorage.getItem("token");
-      const payload = {
-        week_start: weekStart,
-        times: entries.filter(e => e.job_name && e.work_class && e.hours !== "")
-      };
-
-      const response = await axios.post("/api/timesheets", payload, {
-        headers: { Authorization: `Bearer ${token}` }
+      await axios.post('/api/timesheets', {
+        employeeName,
+        entries: filteredEntries,
       });
-
-      alert("Timesheet submitted");
-      navigate("/dashboard");
+      alert('Timesheet submitted!');
     } catch (err) {
       console.error(err);
-      alert("Submission failed");
+      alert('Error submitting timesheet');
     }
   };
 
-  const handlePrint = () => {
-    const doc = new jsPDF();
-    doc.text("Timesheet Summary", 10, 10);
-    entries.forEach((entry, i) => {
-      doc.text(
-        `${entry.day}: ${entry.job_name} | ${entry.work_class} | ${entry.hours} hrs`,
-        10,
-        20 + i * 10
-      );
-    });
-    doc.save("timesheet.pdf");
-  };
-
   return (
-    <div className="container mt-4">
-      <h2>Submit Timesheet</h2>
-      <form onSubmit={handleSubmit}>
+    <div className="container mt-5">
+      <h2>Timesheet Entry</h2>
+      <form onSubmit={onSubmit}>
         <div className="mb-3">
-          <label>Week Starting</label>
-          <input type="date" className="form-control" value={weekStart} onChange={(e) => setWeekStart(e.target.value)} required />
+          <label>Employee Name</label>
+          <input
+            type="text"
+            className="form-control"
+            value={employeeName}
+            onChange={(e) => setEmployeeName(e.target.value)}
+            required
+          />
         </div>
-        {entries.map((entry, idx) => (
-          <div key={idx} className="card p-3 mb-2">
-            <strong>{entry.day}</strong>
-            <input
-              type="text"
-              placeholder="Job Name"
-              className="form-control my-1"
-              value={entry.job_name}
-              onChange={(e) => handleChange(idx, "job_name", e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Work Class"
-              className="form-control my-1"
-              value={entry.work_class}
-              onChange={(e) => handleChange(idx, "work_class", e.target.value)}
-            />
-            <input
-              type="number"
-              placeholder="Hours"
-              className="form-control my-1"
-              value={entry.hours}
-              onChange={(e) => handleChange(idx, "hours", e.target.value)}
-            />
-          </div>
-        ))}
-        <button type="submit" className="btn btn-primary">Submit</button>
-        <button type="button" className="btn btn-secondary ms-2" onClick={handlePrint}>Print PDF</button>
+
+        <div ref={componentRef}>
+          {entries.map((entry, index) => (
+            <div key={index} className="row mb-3">
+              <div className="col">
+                <input
+                  type="date"
+                  className="form-control"
+                  value={entry.date}
+                  onChange={(e) => handleChange(index, 'date', e.target.value)}
+                />
+              </div>
+              <div className="col">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Job Name"
+                  value={entry.jobName}
+                  onChange={(e) => handleChange(index, 'jobName', e.target.value)}
+                />
+              </div>
+              <div className="col">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Work Class"
+                  value={entry.workClass}
+                  onChange={(e) => handleChange(index, 'workClass', e.target.value)}
+                />
+              </div>
+              <div className="col">
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Hours"
+                  value={entry.hours}
+                  onChange={(e) => handleChange(index, 'hours', e.target.value)}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button type="button" className="btn btn-outline-primary me-2" onClick={addEntry}>
+          Add Line
+        </button>
+        <button type="submit" className="btn btn-success me-2">
+          Submit Timesheet
+        </button>
+        <button type="button" className="btn btn-secondary" onClick={handlePrint}>
+          Print Timecard
+        </button>
       </form>
     </div>
   );
