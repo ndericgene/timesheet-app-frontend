@@ -12,5 +12,10 @@ const Dashboard = () => {
     </div>
   );
 };
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  window.location.href = "/login";
+};
+
 
 export default Dashboard;

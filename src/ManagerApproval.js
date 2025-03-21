@@ -1,70 +1,36 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { toast } from "react-toastify";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const ManagerApproval = () => {
   const [timesheets, setTimesheets] = useState([]);
 
   useEffect(() => {
-    const fetchTimesheets = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get("https://centralmechanical.org/api/timesheets/pending", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setTimesheets(response.data);
-      } catch (error) {
-        toast.error("Failed to load pending timesheets");
-      }
-    };
-    fetchTimesheets();
+    axios.get('/api/timesheets/pending')
+      .then(res => setTimesheets(res.data))
+      .catch(err => console.error(err));
   }, []);
 
-  const handleApproval = async (id, status) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.put(`https://centralmechanical.org/api/timesheets/${id}`, { status }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      toast.success(`Timesheet ${status}`);
-      setTimesheets(timesheets.filter((ts) => ts.id !== id));
-    } catch (error) {
-      toast.error("Error updating timesheet");
-    }
+  const handleApprove = (id) => {
+    axios.post(`/api/timesheets/${id}/approve`)
+      .then(() => setTimesheets(timesheets.filter(ts => ts._id !== id)))
+      .catch(err => console.error(err));
   };
 
   return (
     <div className="container mt-5">
-      <h2>Manager Approval</h2>
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Employee</th>
-            <th>Week Ending</th>
-            <th>Job Name</th>
-            <th>Hours</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+      <h2>Pending Timesheets</h2>
+      {timesheets.length === 0 ? (
+        <p>No timesheets pending approval.</p>
+      ) : (
+        <ul className="list-group">
           {timesheets.map((ts) => (
-            <tr key={ts.id}>
-              <td>{ts.name}</td>
-              <td>{ts.weekEnding}</td>
-              <td>{ts.jobName}</td>
-              <td>{Object.values(ts.hours).reduce((a, b) => a + b, 0)}</td>
-              <td>
-                <button className="btn btn-success btn-sm" onClick={() => handleApproval(ts.id, "approved")}>
-                  Approve
-                </button>
-                <button className="btn btn-danger btn-sm ml-2" onClick={() => handleApproval(ts.id, "rejected")}>
-                  Reject
-                </button>
-              </td>
-            </tr>
+            <li key={ts._id} className="list-group-item d-flex justify-content-between align-items-center">
+              <span>{ts.employeeName} - {ts.weekOf}</span>
+              <button className="btn btn-success" onClick={() => handleApprove(ts._id)}>Approve</button>
+            </li>
           ))}
-        </tbody>
-      </table>
+        </ul>
+      )}
     </div>
   );
 };
