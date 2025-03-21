@@ -1,20 +1,23 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
-const Login = ({ setUser }) => {
-  const [username, setUsername] = useState('');
+const Login = () => {
+  const [identifier, setIdentifier] = useState(''); // username or email
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('/api/auth/login', { username, password });
-      setUser(res.data.user);
+      const res = await axios.post('/api/auth/login', { identifier, password });
+      localStorage.setItem('token', res.data.token);
+      toast.success('Login successful!');
       navigate('/dashboard');
     } catch (err) {
-      alert('Login failed.');
+      console.error(err);
+      toast.error('Invalid credentials');
     }
   };
 
@@ -23,26 +26,28 @@ const Login = ({ setUser }) => {
       <h2>Login</h2>
       <form onSubmit={onSubmit}>
         <div className="mb-3">
-          <label>Username</label>
           <input
             type="text"
             className="form-control"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Username or Email"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             required
           />
         </div>
         <div className="mb-3">
-          <label>Password</label>
           <input
             type="password"
             className="form-control"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
-        <button className="btn btn-primary">Login</button>
+        <button className="btn btn-primary" type="submit">
+          Login
+        </button>
       </form>
     </div>
   );
