@@ -5,20 +5,19 @@ import { useReactToPrint } from 'react-to-print';
 const TimesheetForm = () => {
   const componentRef = useRef();
 
-  const [employeeName, setEmployeeName] = useState('');
-  const [entries, setEntries] = useState([
-    { date: '', jobName: '', workClass: '', hours: '' }
-  ]);
-
-  const handleChange = (index, field, value) => {
-    const updated = [...entries];
-    updated[index][field] = value;
-    setEntries(updated);
-  };
-
-  const addEntry = () => {
-    setEntries([...entries, { date: '', jobName: '', workClass: '', hours: '' }]);
-  };
+  const [user_id, setUserId] = useState('');
+  const [week_ending, setWeekEnding] = useState('');
+  const [job_name, setJobName] = useState('');
+  const [work_class, setWorkClass] = useState('');
+  const [monday_hours, setMondayHours] = useState('');
+  const [tuesday_hours, setTuesdayHours] = useState('');
+  const [wednesday_hours, setWednesdayHours] = useState('');
+  const [thursday_hours, setThursdayHours] = useState('');
+  const [friday_hours, setFridayHours] = useState('');
+  const [saturday_hours, setSaturdayHours] = useState('');
+  const [sunday_hours, setSundayHours] = useState('');
+  const [total_hours, setTotalHours] = useState('');
+  const [status, setStatus] = useState('');
 
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
@@ -26,19 +25,22 @@ const TimesheetForm = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    const filteredEntries = entries.filter(entry =>
-      entry.date || entry.jobName || entry.workClass || entry.hours
-    );
-
-    if (!employeeName || filteredEntries.length === 0) {
-      alert('Please enter your name and at least one timesheet entry.');
-      return;
-    }
 
     try {
-      await axios.post('https://centralmechanical.org/api/timesheets', {
-        employeeName,
-        records: filteredEntries, // Ensure the key matches the backend expectation
+      await axios.post(`${process.env.REACT_APP_API_URL}/timesheets`, {
+        user_id,
+        week_ending,
+        job_name,
+        work_class,
+        monday_hours,
+        tuesday_hours,
+        wednesday_hours,
+        thursday_hours,
+        friday_hours,
+        saturday_hours,
+        sunday_hours,
+        total_hours,
+        status
       });
       alert('Timesheet submitted!');
     } catch (err) {
@@ -52,61 +54,135 @@ const TimesheetForm = () => {
       <h2>Timesheet Entry</h2>
       <form onSubmit={onSubmit}>
         <div className="mb-3">
-          <label>Employee Name</label>
+          <label>User ID</label>
           <input
             type="text"
             className="form-control"
-            value={employeeName}
-            onChange={(e) => setEmployeeName(e.target.value)}
+            value={user_id}
+            onChange={(e) => setUserId(e.target.value)}
             required
           />
         </div>
-
-        <div ref={componentRef}>
-          {entries.map((entry, index) => (
-            <div key={index} className="row mb-3">
-              <div className="col">
-                <input
-                  type="date"
-                  className="form-control"
-                  value={entry.date}
-                  onChange={(e) => handleChange(index, 'date', e.target.value)}
-                />
-              </div>
-              <div className="col">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Job Name"
-                  value={entry.jobName}
-                  onChange={(e) => handleChange(index, 'jobName', e.target.value)}
-                />
-              </div>
-              <div className="col">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Work Class"
-                  value={entry.workClass}
-                  onChange={(e) => handleChange(index, 'workClass', e.target.value)}
-                />
-              </div>
-              <div className="col">
-                <input
-                  type="number"
-                  className="form-control"
-                  placeholder="Hours"
-                  value={entry.hours}
-                  onChange={(e) => handleChange(index, 'hours', e.target.value)}
-                />
-              </div>
-            </div>
-          ))}
+        <div className="mb-3">
+          <label>Week Ending</label>
+          <input
+            type="date"
+            className="form-control"
+            value={week_ending}
+            onChange={(e) => setWeekEnding(e.target.value)}
+            required
+          />
         </div>
-
-        <button type="button" className="btn btn-outline-primary me-2" onClick={addEntry}>
-          Add Line
-        </button>
+        <div className="mb-3">
+          <label>Job Name</label>
+          <input
+            type="text"
+            className="form-control"
+            value={job_name}
+            onChange={(e) => setJobName(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label>Work Class</label>
+          <input
+            type="text"
+            className="form-control"
+            value={work_class}
+            onChange={(e) => setWorkClass(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label>Monday Hours</label>
+          <input
+            type="number"
+            className="form-control"
+            value={monday_hours}
+            onChange={(e) => setMondayHours(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label>Tuesday Hours</label>
+          <input
+            type="number"
+            className="form-control"
+            value={tuesday_hours}
+            onChange={(e) => setTuesdayHours(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label>Wednesday Hours</label>
+          <input
+            type="number"
+            className="form-control"
+            value={wednesday_hours}
+            onChange={(e) => setWednesdayHours(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label>Thursday Hours</label>
+          <input
+            type="number"
+            className="form-control"
+            value={thursday_hours}
+            onChange={(e) => setThursdayHours(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label>Friday Hours</label>
+          <input
+            type="number"
+            className="form-control"
+            value={friday_hours}
+            onChange={(e) => setFridayHours(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label>Saturday Hours</label>
+          <input
+            type="number"
+            className="form-control"
+            value={saturday_hours}
+            onChange={(e) => setSaturdayHours(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label>Sunday Hours</label>
+          <input
+            type="number"
+            className="form-control"
+            value={sunday_hours}
+            onChange={(e) => setSundayHours(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label>Total Hours</label>
+          <input
+            type="number"
+            className="form-control"
+            value={total_hours}
+            onChange={(e) => setTotalHours(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label>Status</label>
+          <input
+            type="text"
+            className="form-control"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            required
+          />
+        </div>
         <button type="submit" className="btn btn-success me-2">
           Submit Timesheet
         </button>
