@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+const Login = ({ setIsAuthenticated }) => {
   const [input, setInput] = useState(''); // could be email or username
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -21,23 +23,20 @@ const Login = () => {
         },
       });
 
-      console.log('Login successful', response.data);
-      // store token or redirect...
+      localStorage.setItem('token', response.data.token);
+      setIsAuthenticated(true); // Update the authentication state
+      navigate('/form'); // Redirect to the timesheet form after successful login
     } catch (error) {
       if (error.response) {
         if (error.response.status === 401) {
           setError('Invalid credentials');
-          console.error('Login failed: Invalid credentials', error.response.data);
         } else {
           setError(`An error occurred: ${error.response.status} ${error.response.statusText}`);
-          console.error('Login error', error.response.data);
         }
       } else if (error.request) {
         setError('No response received from server. Please try again later.');
-        console.error('No response received', error.request);
       } else {
         setError('An error occurred. Please try again.');
-        console.error('Login error', error.message);
       }
     }
   };
