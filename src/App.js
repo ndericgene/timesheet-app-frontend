@@ -5,6 +5,8 @@ import TimesheetForm from './TimesheetForm';
 import ManagerApproval from './ManagerApproval';
 
 function App() {
+  const isAuthenticated = !!localStorage.getItem('token');
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     window.location.href = '/';
@@ -16,16 +18,26 @@ function App() {
         <Link to="/" className="navbar-brand">Timekeeper</Link>
         <div className="collapse navbar-collapse">
           <div className="navbar-nav">
-            <Link to="/form" className="nav-link btn btn-light mx-1">Timesheet</Link>
-            <Link to="/approve" className="nav-link btn btn-light mx-1">Manager Panel</Link>
-            <button onClick={handleLogout} className="btn btn-danger mx-1">Logout</button>
+            {isAuthenticated ? (
+              <>
+                <Link to="/form" className="nav-link btn btn-light mx-1">Timesheet</Link>
+                <Link to="/approve" className="nav-link btn btn-light mx-1">Manager Panel</Link>
+                <button onClick={handleLogout} className="btn btn-danger mx-1">Logout</button>
+              </>
+            ) : (
+              <Link to="/" className="nav-link btn btn-light mx-1">Login</Link>
+            )}
           </div>
         </div>
       </nav>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/form" element={<TimesheetForm />} />
-        <Route path="/approve" element={<ManagerApproval />} />
+        {isAuthenticated && (
+          <>
+            <Route path="/form" element={<TimesheetForm />} />
+            <Route path="/approve" element={<ManagerApproval />} />
+          </>
+        )}
       </Routes>
     </Router>
   );

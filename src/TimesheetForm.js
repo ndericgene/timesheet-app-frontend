@@ -36,9 +36,9 @@ const TimesheetForm = () => {
     }
 
     try {
-      await axios.post('/api/timesheets', {
+      await axios.post('https://centralmechanical.org/api/timesheets', { // Ensure the full URL is used if needed
         employeeName,
-        entries: filteredEntries,
+        records: filteredEntries, // Ensure the key matches the backend expectation
       });
       alert('Timesheet submitted!');
     } catch (err) {
