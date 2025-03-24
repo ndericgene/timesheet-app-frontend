@@ -1,13 +1,14 @@
-// Login.js
 import React, { useState } from 'react';
 import axios from 'axios';
 
 const Login = () => {
   const [input, setInput] = useState(''); // could be email or username
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setError(null); // Reset error state before new login attempt
 
     try {
       const requestData = input.includes('@')
@@ -23,10 +24,20 @@ const Login = () => {
       console.log('Login successful', response.data);
       // store token or redirect...
     } catch (error) {
-      if (error.response && error.response.status === 401) {
-        console.error('Login failed: Invalid credentials', error.response.data);
+      if (error.response) {
+        if (error.response.status === 401) {
+          setError('Invalid credentials');
+          console.error('Login failed: Invalid credentials', error.response.data);
+        } else {
+          setError(`An error occurred: ${error.response.status} ${error.response.statusText}`);
+          console.error('Login error', error.response.data);
+        }
+      } else if (error.request) {
+        setError('No response received from server. Please try again later.');
+        console.error('No response received', error.request);
       } else {
-        console.error('Login error', error);
+        setError('An error occurred. Please try again.');
+        console.error('Login error', error.message);
       }
     }
   };
@@ -48,6 +59,7 @@ const Login = () => {
         required
       />
       <button type="submit">Login</button>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
     </form>
   );
 };
