@@ -25,29 +25,28 @@ const TimesheetForm = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-
+  
+    const token = localStorage.getItem('token');
+  
     try {
       await axios.post(`${process.env.REACT_APP_API_URL}/timesheets`, {
-        user_id,
-        week_ending,
-        job_name,
-        work_class,
-        monday_hours,
-        tuesday_hours,
-        wednesday_hours,
-        thursday_hours,
-        friday_hours,
-        saturday_hours,
-        sunday_hours,
-        total_hours,
-        status
+        user_id, week_ending, job_name, work_class,
+        monday_hours, tuesday_hours, wednesday_hours,
+        thursday_hours, friday_hours, saturday_hours, sunday_hours,
+        total_hours, status
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
+  
       alert('Timesheet submitted!');
     } catch (err) {
-      console.error(err);
+      console.error("Submission error:", err.response?.data || err.message);
       alert('Error submitting timesheet');
     }
   };
+  
 
   return (
     <div className="container mt-5">
